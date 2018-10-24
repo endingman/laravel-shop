@@ -31,7 +31,7 @@ class User extends Authenticatable
         'email_verified' => 'boolean',
     ];
 
-    public function address()
+    public function addresses()
     {
         return $this->hasMany(UserAddress::class);
     }
