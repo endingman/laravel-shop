@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "640d4d9a25cd539a79770b79a721b525",
+    "content-hash": "50d7cba774ecd80281e6dc449ce56f18",
     "packages": [
         {
             "name": "caouecs/laravel-lang",
@@ -537,16 +537,16 @@
         },
         {
             "name": "encore/laravel-admin",
-            "version": "v1.6.5",
+            "version": "v1.6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/z-song/laravel-admin.git",
-                "reference": "01c6dea115da521782aa5bab939227b4fe17ce2d"
+                "reference": "5d6aa672f918df80d012fd8fafb5dd7b191146d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/z-song/laravel-admin/zipball/01c6dea115da521782aa5bab939227b4fe17ce2d",
-                "reference": "01c6dea115da521782aa5bab939227b4fe17ce2d",
+                "url": "https://api.github.com/repos/z-song/laravel-admin/zipball/5d6aa672f918df80d012fd8fafb5dd7b191146d4",
+                "reference": "5d6aa672f918df80d012fd8fafb5dd7b191146d4",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -610,7 +610,7 @@
                 "grid",
                 "laravel"
             ],
-            "time": "2018-10-18T02:28:39+00:00"
+            "time": "2018-09-20T05:21:42+00:00"
         },
         {
             "name": "erusev/parsedown",
