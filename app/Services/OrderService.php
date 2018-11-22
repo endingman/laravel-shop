@@ -1,4 +1,6 @@
 <?php
+namespace App\Services;
+
 // +----------------------------------------------------------------------+
 // | @describe
 // +----------------------------------------------------------------------+
@@ -64,13 +66,15 @@ class OrderService
             $order->update(['total_amount' => $totalAmount]);
 
             // 将下单的商品从购物车中移除
-            $skuIds = collect($items->pluck('sku_id'));
+            $skuIds = collect($items)->pluck('sku_id')->all();
             $user->cartItems()->whereIn('product_sku_id', $skuIds)->delete();
 
             return $order;
         });
 
-        $this->dispatch(new CloseOrder($order, config('app.order_ttl')));
+        // 这里我们直接使用 dispatch 函数
+        // 之前在控制器中可以通过 $this->dispatch() 方法来触发任务类，但在我们的封装的类中并没有这个方法，因此关闭订单的任务类改为 dispatch() 辅助函数来触发。
+        dispatch(new CloseOrder($order, config('app.order_ttl')));
 
         return $order;
     }
