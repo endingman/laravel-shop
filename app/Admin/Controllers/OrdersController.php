@@ -55,8 +55,7 @@ class OrdersController extends Controller
     public function edit($id, Content $content)
     {
         return $content
-            ->header('Edit')
-            ->description('description')
+            ->header('编辑优惠券')
             ->body($this->form()->edit($id));
     }
 
