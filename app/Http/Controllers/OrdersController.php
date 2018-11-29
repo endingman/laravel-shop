@@ -29,6 +29,7 @@ class OrdersController extends Controller
                 throw new CouponCodeUnavailableException('优惠券不存在');
             }
         }
+
         // 参数中加入 $coupon 变量
         return $orderService->store($user, $address, $request->input('remark'), $request->input('items'), $coupon);
     }
