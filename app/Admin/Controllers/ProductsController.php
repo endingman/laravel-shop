@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
 use Encore\Admin\Controllers\ModelForm; // <= 教程要求的 trait
 use Encore\Admin\Form;
@@ -83,6 +84,8 @@ class ProductsController extends Controller
 
         $grid->id('Id')->sortable();
         $grid->title('商品名称');
+        // Laravel-Admin 支持用符号 . 来展示关联关系的字段
+        $grid->column('category.name', '类目');
         $grid->on_sale('已上架')->display(function ($value) {
             return $value ? '是' : '否';
         });
@@ -141,6 +144,15 @@ class ProductsController extends Controller
 
         // 创建一个输入框，第一个参数 title 是模型的字段名，第二个参数是该字段描述
         $form->text('title', '商品名称')->rules('required');
+
+        // 添加一个类目字段，与之前类目管理类似，使用 Ajax 的方式来搜索添加
+        $form->select('category_id', '类目')->options(function ($id) {
+            // ->options() 用于编辑商品时展示该商品的类目，Laravel-Admin 会把 category_id 字段值传给匿名函数，匿名函数需要返回 [id => value] 格式的返回值。
+            $category = Category::find($id);
+            if ($category) {
+                return [$category->id => $category->full_name];
+            }
+        })->ajax('/admin/api/categories');
 
         // 创建一个选择图片的框
         $form->image('image', '封面图片')->rules('required|image');
