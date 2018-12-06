@@ -163,6 +163,11 @@ class ProductsController extends Controller
         // 创建一组单选框
         $form->radio('on_sale', '上架')->options(['1' => '是', '0' => '否'])->default('0');
 
+        $form->tools(function ($tools) {
+            // 不展示 Laravel-Admin 默认的查看按钮
+            $tools->disableView();
+        });
+
         // 直接添加一对多的关联模型
         $form->hasMany('skus', 'SKU 列表', function (Form\NestedForm $form) {
             $form->text('title', 'SKU 名称')->rules('required');

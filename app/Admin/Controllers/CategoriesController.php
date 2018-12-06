@@ -148,6 +148,11 @@ class CategoriesController extends Controller
             $form->select('parent_id', '父类目')->ajax('/admin/api/categories?is_directory=0');
         }
 
+        $form->tools(function ($tools) {
+            // 不展示 Laravel-Admin 默认的查看按钮
+            $tools->disableView();
+        });
+
         return $form;
     }
 
