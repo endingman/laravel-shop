@@ -13,7 +13,7 @@ return [
     |
      */
 
-    'name'            => env('APP_NAME', 'Laravel'),
+    'name'                   => env('APP_NAME', 'Laravel'),
 
     /*
     |--------------------------------------------------------------------------
@@ -26,7 +26,7 @@ return [
     |
      */
 
-    'env'             => env('APP_ENV', 'production'),
+    'env'                    => env('APP_ENV', 'production'),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,7 +39,7 @@ return [
     |
      */
 
-    'debug'           => env('APP_DEBUG', false),
+    'debug'                  => env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -52,7 +52,7 @@ return [
     |
      */
 
-    'url'             => env('APP_URL', 'http://localhost'),
+    'url'                    => env('APP_URL', 'http://localhost'),
 
     /*
     |--------------------------------------------------------------------------
@@ -65,7 +65,7 @@ return [
     |
      */
 
-    'timezone'        => 'Asia/Shanghai',
+    'timezone'               => 'Asia/Shanghai',
 
     /*
     |--------------------------------------------------------------------------
@@ -78,7 +78,7 @@ return [
     |
      */
 
-    'locale'          => 'zh-CN',
+    'locale'                 => 'zh-CN',
 
     /*
     |--------------------------------------------------------------------------
@@ -91,9 +91,9 @@ return [
     |
      */
 
-    'fallback_locale' => 'en',
+    'fallback_locale'        => 'en',
 
-    'faker_locale'    => 'zh_CN',
+    'faker_locale'           => 'zh_CN',
 
     /*
     |--------------------------------------------------------------------------
@@ -106,9 +106,9 @@ return [
     |
      */
 
-    'key'             => env('APP_KEY'),
+    'key'                    => env('APP_KEY'),
 
-    'cipher'          => 'AES-256-CBC',
+    'cipher'                 => 'AES-256-CBC',
 
     /*
     |--------------------------------------------------------------------------
@@ -123,9 +123,9 @@ return [
     |
      */
 
-    'log'             => env('APP_LOG', 'single'),
+    'log'                    => env('APP_LOG', 'single'),
 
-    'log_level'       => env('APP_LOG_LEVEL', 'debug'),
+    'log_level'              => env('APP_LOG_LEVEL', 'debug'),
 
     /*
     |--------------------------------------------------------------------------
@@ -138,7 +138,7 @@ return [
     |
      */
 
-    'providers'       => [
+    'providers'              => [
 
         /*
          * Laravel Framework Service Providers...
@@ -192,7 +192,7 @@ return [
     |
      */
 
-    'aliases'         => [
+    'aliases'                => [
 
         'App'          => Illuminate\Support\Facades\App::class,
         'Artisan'      => Illuminate\Support\Facades\Artisan::class,
@@ -230,7 +230,16 @@ return [
 
     ],
 
-    'order_ttl'       => 1800,
-    'ngrok_url'       => env('NGROK_URL'),
+    'order_ttl'              => 1800,
+    'ngrok_url'              => env('NGROK_URL'),
+
+    // 为了简单起见我们把费率写在配置文件中，在正式的项目可以考虑将这个配置存储到数据库中，同时做一个后台页面对这个配置做修改，这样就可以让运营人员自行调整相关参数而不需要修改代码配置了。
+    'installment_fee_rate'   => [
+        3  => 1.5,
+        6  => 2,
+        12 => 2.5,
+    ], // 分期费率，key 为期数，value 为费率
+    'min_installment_amount' => 300, // 最低分期金额
+    'installment_fine_rate'  => 0.05, // 逾期日息 0.05%
 
 ];
