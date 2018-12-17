@@ -48,7 +48,7 @@ class FinishCrowdFunding extends Command
             });
     }
 
-    public function crowdfundingSucceed()
+    public function crowdfundingSucceed(CrowdfundingProduct $crowdfunding)
     {
         // 只需将众筹状态改为众筹成功即可
         $crowdfunding->update([
@@ -56,7 +56,7 @@ class FinishCrowdFunding extends Command
         ]);
     }
 
-    public function crowdfundingFailed()
+    public function crowdfundingFailed(CrowdfundingProduct $crowdfunding)
     {
         // 将众筹状态改为众筹失败
         $crowdfunding->update([
