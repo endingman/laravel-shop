@@ -47,4 +47,21 @@ class Product extends Model
     {
         return $this->hasOne(CrowdfundingProduct::class);
     }
+
+    public function properties()
+    {
+        return $this->hasMany(ProductProperty::class);
+    }
+
+    public function getGroupedPropertiesAttribute()
+    {
+        return $this->properties
+        // 按照属性名聚合，返回的集合的 key 是属性名，value 是包含该属性名的所有属性集合
+            ->groupBy('name')
+        // map 方法遍历集合并将每一个值传入给定的回调方法。该回调可以任意修改项目并返回，从而形成新的被修改过项目的集合
+            ->map(function ($properties) {
+                // 使用 map 方法将属性集合变为属性值集合
+                return $properties->pluck('value')->all();
+            });
+    }
 }
