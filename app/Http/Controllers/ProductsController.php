@@ -6,6 +6,7 @@ use App\Exceptions\InvalidRequestException;
 use App\Models\Category;
 use App\Models\OrderItem;
 use App\Models\product;
+use App\SearchBuilders\ProductSearchBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -19,138 +20,45 @@ class ProductsController extends Controller
         $page    = $request->page ?? $this->page;
         $perPage = $request->perPage ?? $this->perPage;
 
-        // 构建查询
-        $params = [
-            'index' => 'products', //ElasticSearch index(索引) => mysql database（数据库）
-            'type'  => '_doc', //ElasticSearch类型（Type） =>mysql  表（Table）
-            'body'  => [
-                // 通过当前页数与每页数量计算偏移值
-                'from'  => ($page - 1) * $perPage, //ElasticSearch from => mysql offset
-                'size'  => $perPage, //ElasticSearch size => mysql limit
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            ['term' => ['on_sale' => true]],
-                            /**
-                             * ['term' => ['on_sale' => true]]，这个数组的 Key 是 term 代表这是一个『词项查询』。
-                            『词项查询』通常用于搜索一个精确的值，Elasticsearch会拿搜索值在文档对应字段经过分词的结果里精确匹配。我们之前在定义索引数据结构时，on_sale 是一个 Bool 类型，其分词结果就是本身，所以上面这个条件就是查出所有 on_sale 字段是 true 的文档
-                             */
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        // 新建查询构造器对象，设置只搜索上架商品，设置分页
+        $builder = (new ProductSearchBuilder())->onSale()->paginate($perPage, $page);
 
         // order 参数用来控制商品的排序规则
         if ($order = $request->input('order', '')) {
-            // 是否是以 _asc 或者 _desc 结尾
             if (preg_match('/^(.+)_(asc|desc)$/', $order, $m)) {
-                // 如果字符串的开头是这 3 个字符串之一，说明是一个合法的排序值
                 if (in_array($m[1], ['price', 'sold_count', 'rating'])) {
-                    // 根据传入的排序值来构造排序参数
-                    $params['body']['sort'] = [[$m[1] => $m[2]]]; //ElasticSearch-php sort => mysql orderby
+                    // 调用查询构造器的排序
+                    $builder->orderBy($m[1], $m[2]);
                 }
             }
         }
 
         if ($request->input('category_id') && $category = Category::find($request->input('category_id'))) {
-            if ($category->is_directory) {
-                // 如果是一个父类目，则使用 category_path 来筛选
-                $params['body']['query']['bool']['filter'][] = [
-                    'prefix' => ['category_path' => $category->path . $category->id . '-'],
-                    // ElasticSearch-php prefix =>mysql like '${path}%'
-                ];
-            } else {
-                $params['body']['query']['bool']['filter'][] = [
-                    'term' => ['category_id' => $category->id],
-                ];
-            }
+            // 调用查询构造器的类目筛选
+            $builder->category($category);
         }
 
         if ($search = $request->input('search', '')) {
-            $params['body']['query']['bool']['must'] = [ //ElasticSearch-php must => mysql and
-                [
-                    'multi_match' => [ //多条件搜索
-                        'query'  => $search,
-                        'fields' => [ //字段 => mysql or...
-                            'title^3', //^数字 =>权重越大越高
-                            'long_title^2',
-                            'category^2', // 类目名称
-                            'description',
-                            'skus_title',
-                            'skus_description',
-                            'properties_value',
-                        ],
-                    ],
-                ],
-            ];
+            $keywords = array_filter(explode(' ', $search));
+            // 调用查询构造器的关键词筛选
+            $builder->keywords($keywords);
         }
 
-        /**
-         *  要实现分面搜索并不是一个简单的事情，我们将一步一步往目标靠近，首先我们试着把搜索结果中所有的商品属性名取出来（即properties.name），比如上图中的『频率』、『单套容量』，这就需要用到 Elasticsearch 的聚合。
-        Elasticsearch 中的聚合与 SQL 语句的 group by 有些类似，但更加灵活和强大
-         */
         if ($search || isset($category)) {
-            $params['body']['aggs'] = [
-                // 这里的 properties 是我们给这个聚合操作的命名
-                // 可以是其他字符串，与商品结构里的 properties 没有必然联系
-                'properties' => [
-                    // 由于我们要聚合的属性是在 nested 类型字段下的属性，需要在外面套一层 nested 聚合查询
-                    'nested' => [
-                        // 代表我们要查询的 nested 字段名为 properties
-                        'path' => 'properties',
-                    ],
-                    // 在 nested 聚合下嵌套聚合
-                    'aggs'   => [
-                        // 聚合的名称
-                        'properties' => [
-                            // terms 聚合，用于聚合相同的值
-                            'terms' => [
-                                // 我们要聚合的字段名
-                                'field' => 'properties.name',
-                            ],
-                            // value层
-                            'aggs'  => [
-                                'value' => [
-                                    // // terms 聚合，用于聚合相同的值
-                                    'terms' => [
-                                        // 我们要聚合的字段名
-                                        'field' => 'properties.value',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ];
+            // 调用查询构造器的分面搜索
+            $builder->aggregateProperties();
         }
-        //=>结构返回的数据properties.name在$result['aggregations']['properties']['properties']['buckets']中properties.value在上层下$bucket['value']['buckets']中，这个看聚合的结构而定
 
         // filter
         // 从用户请求参数获取 filters
         $propertyFilters = [];
         if ($filterString = $request->input('filters')) {
-            // 将获取到的字符串用符号 | 拆分成数组
             $filterArray = explode('|', $filterString);
             foreach ($filterArray as $filter) {
-                // 将字符串用符号 : 拆分成两部分并且分别赋值给 $name 和 $value 两个变量
-                list($name, $value) = explode(':', $filter);
-
-                // 将用户筛选的属性添加到数组中
+                list($name, $value)     = explode(':', $filter);
                 $propertyFilters[$name] = $value;
-
-                // 添加到 filter 类型中
-                $params['body']['query']['bool']['filter'][] = [
-                    // 由于我们要筛选的是 nested 类型下的属性，因此需要用 nested 查询
-                    'nested' => [
-                        // 指明 nested 字段
-                        'path'  => 'properties',
-                        'query' => [
-                            // 将原来的两个 term 查询改成一个
-                            ['term' => ['properties.search_value' => $filter]],
-                        ],
-                    ],
-                ];
+                // 调用查询构造器的属性筛选
+                $builder->propertyFilter($name, $value);
             }
         }
 
