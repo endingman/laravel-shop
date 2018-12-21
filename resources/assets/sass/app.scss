@@ -116,7 +116,8 @@ body {
                         color: #38b;
                         font-weight: bold;
                     }
-
+                    // &表示当前选择对象, 这里相当于.bottom，类似php this,sass\less语法
+                    // > 子元素
                     &>div {
                         &:first-child {
                             border-right: 1px solid #eee;
@@ -152,6 +153,23 @@ body {
         color: #666;
       }
     }
+
+     .filter {
+      border: 1px red solid;
+      font-size: 12px;
+      padding: 2px 0 2px 2px;
+      .filter-value {
+        color: red;
+      }
+      .remove-filter {
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+        background: red;
+        padding: 2px;
+      }
+    }
+
   }
   .filters {
     font-size: 12px;
