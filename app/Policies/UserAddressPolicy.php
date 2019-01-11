@@ -6,7 +6,7 @@ use App\Models\Installment;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class InstallmentPolicy
+class UserAddressPolicy
 {
     use HandlesAuthorization;
 
