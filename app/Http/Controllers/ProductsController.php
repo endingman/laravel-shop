@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\InvalidRequestException;
 use App\Models\Category;
 use App\Models\OrderItem;
-use App\Models\product;
+use App\Models\Product;
 use App\SearchBuilders\ProductSearchBuilder;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
