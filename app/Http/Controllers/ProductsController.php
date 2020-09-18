@@ -87,8 +87,11 @@ class ProductsController extends Controller
         // 通过 collect 函数将返回结果转为集合，并通过集合的 pluck 方法取到返回的商品 ID 数组
         $productIds = collect($result['hits']['hits'])->pluck('_id')->all(); //ElasticSearch-php 搜索出来的数据结果在$result['hits']['hits']，$result是你定义的结果
         $products   = Product::query()->byIds($productIds)->get();
+
         // 返回一个 LengthAwarePaginator 对象（参数items=>数据，$total =>总记录数，$perPage =>分页大小，$page =>当前页数，$path =>分页url）
-        $pager = new LengthAwarePaginator($products, $result['hits']['total'], $perPage, $page, [
+        // $result['hits']['total'] es6返回数量，es6使用 $result['hits']['total']
+        // $result['hits']['total'] es7返回['value'=>数量，'relation'=>'eq'],所以es7使用 $result['hits']['total']['value']
+        $pager = new LengthAwarePaginator($products, $result['hits']['total']['value'], $perPage, $page, [
             'path' => route('products.index', false), // 手动构建分页的 url
         ]);
 
