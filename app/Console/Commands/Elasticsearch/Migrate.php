@@ -73,8 +73,8 @@ class Migrate extends Command
         // 调用 create() 方法创建索引
         $this->es->indices()->create([
             // 第一个版本的索引名后缀为 _0
-            'index' => $aliasName . '_0',
-            'body'  => [
+            'index'             => $aliasName . '_0',
+            'body'              => [
                 // 调用索引类的 getSettings() 方法获取索引设置
                 'settings' => $indexClass::getSettings(),
                 'mappings' => [
@@ -88,6 +88,7 @@ class Migrate extends Command
                     $aliasName => new \stdClass(),
                 ],
             ],
+            'include_type_name' => true, //7.x之后向前兼容
         ]);
     }
 
@@ -102,13 +103,14 @@ class Migrate extends Command
         ]);
         // 更新索引字段
         $this->es->indices()->putMapping([
-            'index' => $aliasName,
-            'type'  => '_doc',
-            'body'  => [
+            'index'             => $aliasName,
+            'type'              => '_doc',
+            'body'              => [
                 '_doc' => [
                     'properties' => $indexClass::getProperties(),
                 ],
             ],
+            'include_type_name' => true, //7.x之后向前兼容
         ]);
         // 重新打开索引
         $this->es->indices()->open(['index' => $aliasName]);
@@ -130,8 +132,8 @@ class Migrate extends Command
         $newIndexName = $aliasName . '_' . ($m[1] + 1);
         $this->info('正在创建索引' . $newIndexName);
         $this->es->indices()->create([
-            'index' => $newIndexName,
-            'body'  => [
+            'index'             => $newIndexName,
+            'body'              => [
                 'settings' => $indexClass::getSettings(),
                 'mappings' => [
                     '_doc' => [
@@ -139,6 +141,7 @@ class Migrate extends Command
                     ],
                 ],
             ],
+            'include_type_name' => true, //7.x之后向前兼容
         ]);
         $this->info('创建成功，准备重建数据');
         $indexClass::rebuild($newIndexName);
